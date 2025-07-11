@@ -17,6 +17,32 @@ A desktop notification system that monitors internet connectivity across various
 
 You can download the latest pre-built binaries for Linux, Windows, and macOS from the [Releases page](https://github.com/ohmydevops/arvancloud-radar-notif/releases).
 
+## Command Line Options
+
+You can use the following flags when running the executable:
+
+- `--help`            Show help message and available services
+- `--service=N`       Monitor a specific service directly (N is the service number)
+
+### Available Services
+
+1. google
+2. wikipedia
+3. playstation
+4. bing
+5. github
+6. digikala
+7. divar
+8. aparat
+
+### Examples
+
+```bash
+./build/radar-linux                # Interactive mode (asks for service)
+./build/radar-linux --service=3    # Monitor playstation directly
+./build/radar-linux --help         # Show help and available services
+```
+
 ## Prerequisites (to build on your machine)
 
 - Go 1.16 or higher
