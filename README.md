@@ -13,7 +13,11 @@ A desktop notification system that monitors internet connectivity across various
 - Concurrent monitoring of multiple ISPs
 - Configurable service monitoring (currently set to Google)
 
-## Prerequisites
+## Download
+
+You can download the latest pre-built binaries for Linux, Windows, and macOS from the [Releases page](https://github.com/ohmydevops/arvancloud-radar-notif/releases).
+
+## Prerequisites (to build on your machine)
 
 - Go 1.16 or higher
 - Make (for building)
