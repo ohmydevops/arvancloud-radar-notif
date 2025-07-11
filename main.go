@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 	"time"
 
 	"github.com/gen2brain/beeep"
@@ -46,11 +48,24 @@ var isps = []string{
 	"irancell",
 }
 
-func chooseService() string {
-	fmt.Println("🔍 Choose a service to monitor:")
+func printServices() {
+	fmt.Println("Usage:")
+	fmt.Println("  --service=N       Run directly without prompt, where N is the service number (see below)")
+	fmt.Println("  --help            Show this help message and available services")
+	fmt.Println()
+	fmt.Println("Available services:")
 	for i, s := range availableServices {
-		fmt.Printf("  %d) %s\n", i+1, s)
+		fmt.Printf("  %2d) %s\n", i+1, s)
 	}
+	fmt.Println()
+	fmt.Println("Examples:")
+	fmt.Println("  ./radar-linux                # Interactive mode (asks for service)")
+	fmt.Println("  ./radar-linux --service=3    # Monitor playstation directly")
+	fmt.Println("  ./radar-linux --help         # Show this help message")
+}
+
+func chooseServiceInteractive() string {
+	printServices()
 	var choice int
 	fmt.Print("Enter number: ")
 	_, err := fmt.Scanln(&choice)
@@ -125,8 +140,25 @@ func waitUntilNextMinute() {
 }
 
 func main() {
-	fmt.Println("🌐 Arvan Cloud Radar Monitor")
-	serviceIndicator = chooseService()
+	fmt.Println("📡 Arvan Cloud Radar Monitor")
+	serviceFlag := flag.Int("service", 0, "Service number to monitor (e.g. 1 for google, 2 for wikipedia...)")
+	helpFlag := flag.Bool("help", false, "Show available services")
+	flag.Parse()
+
+	if *helpFlag {
+		printServices()
+		return
+	}
+
+	if *serviceFlag > 0 && *serviceFlag <= len(availableServices) {
+		serviceIndicator = availableServices[*serviceFlag-1]
+	} else if *serviceFlag != 0 {
+		fmt.Println("❌ Invalid service number. Use --help to see available options.")
+		os.Exit(1)
+	} else {
+		serviceIndicator = chooseServiceInteractive()
+	}
+
 	fmt.Printf("✅ Monitoring service: %s\n", serviceIndicator)
 
 	jar, _ := cookiejar.New(nil)
