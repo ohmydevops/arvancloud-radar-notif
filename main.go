@@ -14,11 +14,21 @@ import (
 const baseURL = "https://radar.arvancloud.ir/api/v1/internet-monitoring?isp="
 
 var (
-	errorCounts = make(map[string]int)
-	erroredISPs = make(map[string]bool)
+	errorCounts      = make(map[string]int)
+	erroredISPs      = make(map[string]bool)
+	serviceIndicator string
 )
 
-var serviceIndicator string = "google"
+var availableServices = []string{
+	"google",
+	"wikipedia",
+	"playstation",
+	"bing",
+	"github",
+	"digikala",
+	"divar",
+	"aparat",
+}
 
 var isps = []string{
 	"sindad-buf",
@@ -34,6 +44,21 @@ var isps = []string{
 	"afranet",
 	"mci",
 	"irancell",
+}
+
+func chooseService() string {
+	fmt.Println("🔍 Choose a service to monitor:")
+	for i, s := range availableServices {
+		fmt.Printf("  %d) %s\n", i+1, s)
+	}
+	var choice int
+	fmt.Print("Enter number: ")
+	_, err := fmt.Scanln(&choice)
+	if err != nil || choice < 1 || choice > len(availableServices) {
+		fmt.Println("❌ Invalid choice. Defaulting to 'google'")
+		return "google"
+	}
+	return availableServices[choice-1]
 }
 
 func fetchData(client *http.Client, isp string) (float64, error) {
@@ -60,12 +85,12 @@ func fetchData(client *http.Client, isp string) (float64, error) {
 		return 0, fmt.Errorf("❌ JSON parse error: %v", err)
 	}
 
-	googleValues, ok := data[serviceIndicator]
-	if !ok || googleValues == nil || len(googleValues) == 0 {
+	values, ok := data[serviceIndicator]
+	if !ok || values == nil || len(values) == 0 {
 		return 0, fmt.Errorf("-")
 	}
 
-	return googleValues[len(googleValues)-1], nil
+	return values[len(values)-1], nil
 }
 
 func checkStatus(isp string, value float64) {
@@ -74,7 +99,7 @@ func checkStatus(isp string, value float64) {
 	if value != 0 {
 		errorCounts[isp]++
 		if errorCounts[isp] >= 3 && !erroredISPs[isp] {
-			err := beeep.Notify("🔴 Internet Outage", fmt.Sprintf("Google unreachable from %s", isp), "./icon.png")
+			err := beeep.Notify("🔴 Internet Outage", fmt.Sprintf("%s unreachable from %s", serviceIndicator, isp), "./icon.png")
 			if err != nil {
 				fmt.Printf("[%s] ❌ Notification error: %v\n", isp, err)
 			}
@@ -82,11 +107,11 @@ func checkStatus(isp string, value float64) {
 		}
 	} else {
 		if erroredISPs[isp] {
-			err := beeep.Notify("🟢 Internet Outage fixed", fmt.Sprintf("Google reachable from %s", isp), "./icon.png")
+			err := beeep.Notify("🟢 Internet Restored", fmt.Sprintf("%s is reachable again from %s", serviceIndicator, isp), "./icon.png")
 			if err != nil {
 				fmt.Printf("[%s] ❌ Notification error: %v\n", isp, err)
 			}
-			fmt.Printf("[%s] 🟢 Google is reachable again\n", isp)
+			fmt.Printf("[%s] 🟢 %s is reachable again\n", isp, serviceIndicator)
 		}
 		errorCounts[isp] = 0
 		erroredISPs[isp] = false
@@ -100,7 +125,10 @@ func waitUntilNextMinute() {
 }
 
 func main() {
-	fmt.Println("Arvan Cloud Outage Notification started ...")
+	fmt.Println("🌐 Arvan Cloud Radar Monitor")
+	serviceIndicator = chooseService()
+	fmt.Printf("✅ Monitoring service: %s\n", serviceIndicator)
+
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{Jar: jar}
 
