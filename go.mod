@@ -1,4 +1,4 @@
-module arvancloud-radar-notif
+module github.com/ohmydevops/arvancloud-radar-notif
 
 go 1.24.5
 
