@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -25,10 +24,6 @@ var (
 func main() {
 	cfg, err := parseFlags()
 	if err != nil {
-		if errors.Is(err, ErrEmptyService) {
-			flag.Usage()
-			os.Exit(1)
-		}
 		fmt.Println("❌", err)
 		flag.Usage()
 		os.Exit(1)
