@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"strings"
@@ -12,6 +13,8 @@ type Config struct {
 	Service      string
 	ShowServices bool
 }
+
+var ErrEmptyService = errors.New("must specify a service")
 
 func parseFlags() (*Config, error) {
 	var cfg Config
@@ -34,6 +37,9 @@ func parseFlags() (*Config, error) {
 	// normalize to lowercase
 	cfg.Service = strings.ToLower(cfg.Service)
 
+	if cfg.Service == "" {
+		return nil, ErrEmptyService
+	}
 	// Validate service
 	if _, ok := radar.ParseService(cfg.Service); !ok {
 		return nil, fmt.Errorf("invalid service: %s", cfg.Service)
