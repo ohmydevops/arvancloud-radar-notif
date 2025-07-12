@@ -16,9 +16,9 @@ import (
 const baseURL = "https://radar.arvancloud.ir/api/v1/internet-monitoring?isp="
 
 var (
-	errorCounts      = make(map[string]int)
-	erroredISPs      = make(map[string]bool)
-	serviceIndicator string
+	errorCounts        = make(map[string]int)
+	erroredDataCenters = make(map[string]bool)
+	serviceIndicator   string
 )
 
 var availableServices = []string{
@@ -32,7 +32,7 @@ var availableServices = []string{
 	"aparat",
 }
 
-var isps = []string{
+var dataCenters = []string{
 	"sindad-buf",
 	"sindad-thr-fanava",
 	"sindad-thr",
@@ -76,8 +76,8 @@ func chooseServiceInteractive() string {
 	return availableServices[choice-1]
 }
 
-func fetchData(client *http.Client, isp string) (float64, error) {
-	url := baseURL + isp
+func fetchData(client *http.Client, dataCenter string) (float64, error) {
+	url := baseURL + dataCenter
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -112,28 +112,28 @@ func fetchData(client *http.Client, isp string) (float64, error) {
 	return values[len(values)-1], nil
 }
 
-func checkStatus(isp string, value float64) {
-	fmt.Printf("[%s] => Value: %.2f\n", isp, value)
+func checkStatus(dataCenter string, value float64) {
+	fmt.Printf("[%s] => Value: %.2f\n", dataCenter, value)
 	beeep.AppName = "Arvan Cloud Radar"
 	if value != 0 {
-		errorCounts[isp]++
-		if errorCounts[isp] >= 3 && !erroredISPs[isp] {
-			err := beeep.Notify("🔴 Internet Outage", fmt.Sprintf("%s unreachable from %s", serviceIndicator, isp), "./icon.png")
+		errorCounts[dataCenter]++
+		if errorCounts[dataCenter] >= 3 && !erroredDataCenters[dataCenter] {
+			err := beeep.Notify("🔴 Internet Outage", fmt.Sprintf("%s unreachable from %s", serviceIndicator, dataCenter), "./icon.png")
 			if err != nil {
-				fmt.Printf("[%s] ⚠️ Notification error: %v\n", isp, err)
+				fmt.Printf("[%s] ⚠️ Notification error: %v\n", dataCenter, err)
 			}
-			erroredISPs[isp] = true
+			erroredDataCenters[dataCenter] = true
 		}
 	} else {
-		if erroredISPs[isp] {
-			err := beeep.Notify("🟢 Internet Restored", fmt.Sprintf("%s is reachable again from %s", serviceIndicator, isp), "./icon.png")
+		if erroredDataCenters[dataCenter] {
+			err := beeep.Notify("🟢 Internet Restored", fmt.Sprintf("%s is reachable again from %s", serviceIndicator, dataCenter), "./icon.png")
 			if err != nil {
-				fmt.Printf("[%s] ⚠️ Notification error: %v\n", isp, err)
+				fmt.Printf("[%s] ⚠️ Notification error: %v\n", dataCenter, err)
 			}
-			fmt.Printf("[%s] 🟢 %s is reachable again\n", isp, serviceIndicator)
+			fmt.Printf("[%s] 🟢 %s is reachable again\n", dataCenter, serviceIndicator)
 		}
-		errorCounts[isp] = 0
-		erroredISPs[isp] = false
+		errorCounts[dataCenter] = 0
+		erroredDataCenters[dataCenter] = false
 	}
 }
 
@@ -171,15 +171,15 @@ func main() {
 	waitUntilNextMinute()
 	for {
 		fmt.Printf("⏰ %s\n", time.Now().Format("15:04:05"))
-		for _, isp := range isps {
-			go func(isp string) {
-				value, err := fetchData(client, isp)
+		for _, dataCenter := range dataCenters {
+			go func(dc string) {
+				value, err := fetchData(client, dc)
 				if err != nil {
-					fmt.Printf("[%s] %v\n", isp, err)
+					fmt.Printf("[%s] %v\n", dc, err)
 					return
 				}
-				checkStatus(isp, value)
-			}(isp)
+				checkStatus(dc, value)
+			}(dataCenter)
 		}
 		time.Sleep(1 * time.Minute)
 	}
