@@ -19,19 +19,21 @@ var (
 type ISP string
 
 const (
-	ISP_MCI             ISP = "mci"
-	ISP_Irancell        ISP = "irancell"
-	ISP_Tehran2         ISP = "tehran-2"
-	ISP_Tehran3         ISP = "tehran-3"
-	ISP_Hostiran        ISP = "hostiran"
-	ISP_Parsonline      ISP = "parsonline"
-	ISP_Afranet         ISP = "afranet"
-	ISP_SindadBuf       ISP = "sindad-buf"
-	ISP_SindadThrFanava ISP = "sindad-thr-fanava"
-	ISP_SindadThr       ISP = "sindad-thr"
-	ISP_BertinaXrx      ISP = "bertina-xrx"
-	ISP_BertinaThr      ISP = "bertina-thr"
-	ISP_AjkAbrbaran     ISP = "ajk-abrbaran"
+	ISP_MCI         ISP = "mci"
+	ISP_Irancell    ISP = "irancell"
+	ISP_Tehran2     ISP = "tehran-2"
+	ISP_Tehran3     ISP = "tehran-3"
+	ISP_Hostiran    ISP = "hostiran"
+	ISP_Parsonline  ISP = "parsonline"
+	ISP_Afranet     ISP = "afranet"
+	ISP_BertinaXrx  ISP = "bertina-xrx"
+	ISP_BertinaThr  ISP = "bertina-thr"
+	ISP_AjkAbrbaran ISP = "ajk-abrbaran"
+
+	// Not found data ISPs
+	// ISP_SindadThrFanava ISP = "sindad-thr-fanava"
+	// ISP_SindadBuf   ISP = "sindad-buf"
+	// ISP_SindadThr   ISP = "sindad-thr"
 )
 
 var AllISPs = []ISP{
@@ -42,12 +44,12 @@ var AllISPs = []ISP{
 	ISP_Hostiran,
 	ISP_Parsonline,
 	ISP_Afranet,
-	ISP_SindadBuf,
-	ISP_SindadThrFanava,
-	ISP_SindadThr,
 	ISP_BertinaXrx,
 	ISP_BertinaThr,
 	ISP_AjkAbrbaran,
+	// ISP_SindadThrFanava,
+	// ISP_SindadBuf,
+	// ISP_SindadThr,
 }
 
 type Service string
