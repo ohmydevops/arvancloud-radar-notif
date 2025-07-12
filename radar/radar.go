@@ -1,4 +1,4 @@
-package main
+package radar
 
 import (
 	"encoding/json"
@@ -34,6 +34,22 @@ const (
 	ISP_AjkAbrbaran     ISP = "ajk-abrbaran"
 )
 
+var AllISPs = []ISP{
+	ISP_MCI,
+	ISP_Irancell,
+	ISP_Tehran2,
+	ISP_Tehran3,
+	ISP_Hostiran,
+	ISP_Parsonline,
+	ISP_Afranet,
+	ISP_SindadBuf,
+	ISP_SindadThrFanava,
+	ISP_SindadThr,
+	ISP_BertinaXrx,
+	ISP_BertinaThr,
+	ISP_AjkAbrbaran,
+}
+
 type Service string
 
 const (
@@ -47,6 +63,26 @@ const (
 	Service_Aparat      Service = "aparat"
 )
 
+var AllServices = []Service{
+	Service_Google,
+	Service_Github,
+	Service_Wikipedia,
+	Service_Playstation,
+	Service_Bing,
+	Service_Digikala,
+	Service_Divar,
+	Service_Aparat,
+}
+
+func ParseService(s string) (Service, bool) {
+	for _, svc := range AllServices {
+		if string(svc) == s {
+			return svc, true
+		}
+	}
+	return "", false
+}
+
 // Arvan Cloud API base URL
 const baseURL = "https://radar.arvancloud.ir/api/v1/internet-monitoring?isp="
 
@@ -59,8 +95,8 @@ func (ss *ServiceStatistics) IsAccessibleNow() bool {
 	return ss.Statistics[len(ss.Statistics)-1] == 0
 }
 
-// Check fetches the latest monitoring value for the given ISP and service.
-func Check(isp ISP, service Service) (*ServiceStatistics, error) {
+// CheckISPServiceStatistics fetches the latest monitoring value for the given ISP and service.
+func CheckISPServiceStatistics(isp ISP, service Service) (*ServiceStatistics, error) {
 	client := getClient()
 
 	body, err := fetchData(client, string(isp))
