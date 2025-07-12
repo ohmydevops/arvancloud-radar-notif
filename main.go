@@ -14,6 +14,8 @@ import (
 // Max consecutive errors to consider outage
 const maxISPError = 3
 
+const NotificationIconPath = "./icon.png"
+
 var (
 	ISPErrorCounts = make(map[radar.Datacenter]int)
 	erroredISPs    = make(map[radar.Datacenter]bool)
@@ -36,7 +38,7 @@ func main() {
 	// Create notification manager
 	notifier := &NotifiersManager{
 		Notifiers: []Notifier{
-			&DesktopNotifier{},
+			NewDesktopNotofier(NotificationIconPath),
 		},
 	}
 
