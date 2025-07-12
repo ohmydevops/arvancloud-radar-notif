@@ -1,4 +1,4 @@
-package main
+package notification
 
 import (
 	"fmt"
@@ -15,6 +15,12 @@ type Notifier interface {
 // NotifiersManager combines multiple notifiers into one.
 type NotifiersManager struct {
 	Notifiers []Notifier
+}
+
+func NewNotofiersManager(notifiers []Notifier) *NotifiersManager {
+	return &NotifiersManager{
+		Notifiers: notifiers,
+	}
 }
 
 func (m *NotifiersManager) Notify(title, message string) error {

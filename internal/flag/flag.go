@@ -1,4 +1,4 @@
-package main
+package flag
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ type Config struct {
 	ShowServices bool
 }
 
-func parseFlags() (*Config, error) {
+func ParseFlags() (*Config, error) {
 	var cfg Config
 
 	flag.StringVar(&cfg.Service, "service", "", "Service name to monitor (e.g. google, github, etc.)")

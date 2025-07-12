@@ -8,13 +8,15 @@ import (
 	"sync"
 	"time"
 
+	internal_flag "github.com/ohmydevops/arvancloud-radar-notif/internal/flag"
+	"github.com/ohmydevops/arvancloud-radar-notif/internal/notification"
 	"github.com/ohmydevops/arvancloud-radar-notif/radar"
 )
 
 // Max consecutive errors to consider outage
 const maxISPError = 3
 
-const NotificationIconPath = "./icon.png"
+const notificationIconPath = "./icon.png"
 
 var (
 	ISPErrorCounts = make(map[radar.Datacenter]int)
@@ -23,7 +25,7 @@ var (
 )
 
 func main() {
-	cfg, err := parseFlags()
+	cfg, err := internal_flag.ParseFlags()
 	if err != nil {
 		fmt.Println("❌", err)
 		flag.Usage()
@@ -36,11 +38,10 @@ func main() {
 	}
 
 	// Create notification manager
-	notifier := &NotifiersManager{
-		Notifiers: []Notifier{
-			NewDesktopNotofier(NotificationIconPath),
-		},
+	notifiers := []notification.Notifier{
+		notification.NewDesktopNotofier(notificationIconPath),
 	}
+	notifiersManager := notification.NewNotofiersManager(notifiers)
 
 	fmt.Println("📡 Arvan Cloud Radar Monitor")
 
@@ -57,7 +58,7 @@ func main() {
 			wg.Add(1)
 			go func(isp radar.Datacenter) {
 				defer wg.Done()
-				checkISP(isp, radar.Service(cfg.Service), notifier)
+				checkISP(isp, radar.Service(cfg.Service), notifiersManager)
 			}(isp)
 		}
 
@@ -67,7 +68,7 @@ func main() {
 }
 
 // checkISP handles checking & notification for a single ISP
-func checkISP(datacenter radar.Datacenter, service radar.Service, notifiersManager *NotifiersManager) {
+func checkISP(datacenter radar.Datacenter, service radar.Service, notifiersManager *notification.NotifiersManager) {
 	stats, err := radar.CheckDatacenterServiceStatistics(datacenter, service)
 	if err != nil {
 		fmt.Printf("[%s] ⚠️ %v\n", datacenter, err)
