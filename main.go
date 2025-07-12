@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gen2brain/beeep"
 	"github.com/ohmydevops/arvancloud-radar-notif/radar"
 )
 
@@ -34,6 +33,13 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Create notification manager
+	notifier := &NotifiersManager{
+		Notifiers: []Notifier{
+			&DesktopNotifier{},
+		},
+	}
+
 	fmt.Println("📡 Arvan Cloud Radar Monitor")
 
 	fmt.Printf("✅ Monitoring service: %s\n", cfg.Service)
@@ -49,7 +55,7 @@ func main() {
 			wg.Add(1)
 			go func(isp radar.Datacenter) {
 				defer wg.Done()
-				checkISP(isp, radar.Service(cfg.Service))
+				checkISP(isp, radar.Service(cfg.Service), notifier)
 			}(isp)
 		}
 
@@ -59,10 +65,10 @@ func main() {
 }
 
 // checkISP handles checking & notification for a single ISP
-func checkISP(isp radar.Datacenter, service radar.Service) {
-	stats, err := radar.CheckDatacenterServiceStatistics(isp, service)
+func checkISP(datacenter radar.Datacenter, service radar.Service, notifiersManager *NotifiersManager) {
+	stats, err := radar.CheckDatacenterServiceStatistics(datacenter, service)
 	if err != nil {
-		fmt.Printf("[%s] ⚠️ %v\n", isp, err)
+		fmt.Printf("[%s] ⚠️ %v\n", datacenter, err)
 		return
 	}
 
@@ -70,36 +76,26 @@ func checkISP(isp radar.Datacenter, service radar.Service) {
 	defer mu.Unlock()
 
 	if stats.IsAccessibleNow() {
-		if erroredISPs[isp] {
-			notifyRestored(service, isp)
+		if erroredISPs[datacenter] {
+			title := "🟢 Internet Restored"
+			msg := fmt.Sprintf("%s is reachable again from %s", service, datacenter)
+			if err := notifiersManager.Notify(title, msg); err != nil {
+				log.Printf("[%s] ❌ Notification error: %v", datacenter, err)
+			}
 		}
-		erroredISPs[isp] = false
-		ISPErrorCounts[isp] = 0
+		erroredISPs[datacenter] = false
+		ISPErrorCounts[datacenter] = 0
 	} else {
-		ISPErrorCounts[isp]++
-		if ISPErrorCounts[isp] > maxISPError && !erroredISPs[isp] {
-			notifyOutage(service, isp)
-			erroredISPs[isp] = true
+		ISPErrorCounts[datacenter]++
+		if ISPErrorCounts[datacenter] > maxISPError && !erroredISPs[datacenter] {
+			title := "🔴 Internet Outage"
+			msg := fmt.Sprintf("%s unreachable from %s", service, datacenter)
+			if err := notifiersManager.Notify(title, msg); err != nil {
+				fmt.Printf("[%s] ❌ Notification error: %v", datacenter, err)
+			}
+			erroredISPs[datacenter] = true
 		}
 	}
-}
-
-// notifyOutage sends notification when service becomes unreachable
-func notifyOutage(service radar.Service, isp radar.Datacenter) {
-	msg := fmt.Sprintf("%s unreachable from %s", service, isp)
-	if err := beeep.Notify("🔴 Internet Outage", msg, "./icon.png"); err != nil {
-		fmt.Printf("[%s] ❌ Notification error: %v", isp, err)
-	}
-	fmt.Printf("[%s] 🔴 %s outage detected", isp, service)
-}
-
-// notifyRestored sends notification when service is reachable again
-func notifyRestored(service radar.Service, isp radar.Datacenter) {
-	msg := fmt.Sprintf("%s is reachable again from %s", service, isp)
-	if err := beeep.Notify("🟢 Internet Restored", msg, "./icon.png"); err != nil {
-		log.Printf("[%s] ❌ Notification error: %v", isp, err)
-	}
-	log.Printf("[%s] 🟢 %s restored", isp, service)
 }
 
 // printServices prints available services
