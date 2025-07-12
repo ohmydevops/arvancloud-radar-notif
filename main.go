@@ -16,8 +16,8 @@ import (
 const maxISPError = 3
 
 var (
-	ISPErrorCounts = make(map[radar.ISP]int)
-	erroredISPs    = make(map[radar.ISP]bool)
+	ISPErrorCounts = make(map[radar.Datacenter]int)
+	erroredISPs    = make(map[radar.Datacenter]bool)
 	mu             sync.Mutex // protects ISPErrorCounts & erroredISPs
 )
 
@@ -45,9 +45,9 @@ func main() {
 
 		var wg sync.WaitGroup
 
-		for _, isp := range radar.AllISPs {
+		for _, isp := range radar.AllDatacenters {
 			wg.Add(1)
-			go func(isp radar.ISP) {
+			go func(isp radar.Datacenter) {
 				defer wg.Done()
 				checkISP(isp, radar.Service(cfg.Service))
 			}(isp)
@@ -59,8 +59,8 @@ func main() {
 }
 
 // checkISP handles checking & notification for a single ISP
-func checkISP(isp radar.ISP, service radar.Service) {
-	stats, err := radar.CheckISPServiceStatistics(isp, service)
+func checkISP(isp radar.Datacenter, service radar.Service) {
+	stats, err := radar.CheckDatacenterServiceStatistics(isp, service)
 	if err != nil {
 		fmt.Printf("[%s] ⚠️ %v\n", isp, err)
 		return
@@ -85,7 +85,7 @@ func checkISP(isp radar.ISP, service radar.Service) {
 }
 
 // notifyOutage sends notification when service becomes unreachable
-func notifyOutage(service radar.Service, isp radar.ISP) {
+func notifyOutage(service radar.Service, isp radar.Datacenter) {
 	msg := fmt.Sprintf("%s unreachable from %s", service, isp)
 	if err := beeep.Notify("🔴 Internet Outage", msg, "./icon.png"); err != nil {
 		fmt.Printf("[%s] ❌ Notification error: %v", isp, err)
@@ -94,7 +94,7 @@ func notifyOutage(service radar.Service, isp radar.ISP) {
 }
 
 // notifyRestored sends notification when service is reachable again
-func notifyRestored(service radar.Service, isp radar.ISP) {
+func notifyRestored(service radar.Service, isp radar.Datacenter) {
 	msg := fmt.Sprintf("%s is reachable again from %s", service, isp)
 	if err := beeep.Notify("🟢 Internet Restored", msg, "./icon.png"); err != nil {
 		log.Printf("[%s] ❌ Notification error: %v", isp, err)

@@ -16,40 +16,40 @@ var (
 
 // Define types and constants
 
-type ISP string
+type Datacenter string
 
 const (
-	ISP_MCI         ISP = "mci"
-	ISP_Irancell    ISP = "irancell"
-	ISP_Tehran2     ISP = "tehran-2"
-	ISP_Tehran3     ISP = "tehran-3"
-	ISP_Hostiran    ISP = "hostiran"
-	ISP_Parsonline  ISP = "parsonline"
-	ISP_Afranet     ISP = "afranet"
-	ISP_BertinaXrx  ISP = "bertina-xrx"
-	ISP_BertinaThr  ISP = "bertina-thr"
-	ISP_AjkAbrbaran ISP = "ajk-abrbaran"
+	Datacenter_MCI         Datacenter = "mci"
+	Datacenter_Irancell    Datacenter = "irancell"
+	Datacenter_Tehran2     Datacenter = "tehran-2"
+	Datacenter_Tehran3     Datacenter = "tehran-3"
+	Datacenter_Hostiran    Datacenter = "hostiran"
+	Datacenter_Parsonline  Datacenter = "parsonline"
+	Datacenter_Afranet     Datacenter = "afranet"
+	Datacenter_BertinaXrx  Datacenter = "bertina-xrx"
+	Datacenter_BertinaThr  Datacenter = "bertina-thr"
+	Datacenter_AjkAbrbaran Datacenter = "ajk-abrbaran"
 
-	// Not found data ISPs
-	// ISP_SindadThrFanava ISP = "sindad-thr-fanava"
-	// ISP_SindadBuf   ISP = "sindad-buf"
-	// ISP_SindadThr   ISP = "sindad-thr"
+	// Not found data DataCenters
+	// DataCenter_SindadThrFanava Datacenter = "sindad-thr-fanava"
+	// DataCenter_SindadBuf   Datacenter = "sindad-buf"
+	// DataCenter_SindadThr   Datacenter = "sindad-thr"
 )
 
-var AllISPs = []ISP{
-	ISP_MCI,
-	ISP_Irancell,
-	ISP_Tehran2,
-	ISP_Tehran3,
-	ISP_Hostiran,
-	ISP_Parsonline,
-	ISP_Afranet,
-	ISP_BertinaXrx,
-	ISP_BertinaThr,
-	ISP_AjkAbrbaran,
-	// ISP_SindadThrFanava,
-	// ISP_SindadBuf,
-	// ISP_SindadThr,
+var AllDatacenters = []Datacenter{
+	Datacenter_MCI,
+	Datacenter_Irancell,
+	Datacenter_Tehran2,
+	Datacenter_Tehran3,
+	Datacenter_Hostiran,
+	Datacenter_Parsonline,
+	Datacenter_Afranet,
+	Datacenter_BertinaXrx,
+	Datacenter_BertinaThr,
+	Datacenter_AjkAbrbaran,
+	// Datacenter_SindadThrFanava,
+	// Datacenter_SindadBuf,
+	// Datacenter_SindadThr,
 }
 
 type Service string
@@ -97,11 +97,11 @@ func (ss *ServiceStatistics) IsAccessibleNow() bool {
 	return ss.Statistics[len(ss.Statistics)-1] == 0
 }
 
-// CheckISPServiceStatistics fetches the latest monitoring value for the given ISP and service.
-func CheckISPServiceStatistics(isp ISP, service Service) (*ServiceStatistics, error) {
+// CheckDatacenterServiceStatistics fetches the latest monitoring value for the given datacenter and service.
+func CheckDatacenterServiceStatistics(datacenter Datacenter, service Service) (*ServiceStatistics, error) {
 	client := getClient()
 
-	body, err := fetchData(client, string(isp))
+	body, err := fetchData(client, string(datacenter))
 	if err != nil {
 		return nil, err
 	}
@@ -117,8 +117,8 @@ func getClient() *http.Client {
 }
 
 // fetchData performs the HTTP GET request and returns response body bytes.
-func fetchData(client *http.Client, isp string) ([]byte, error) {
-	resp, err := client.Get(baseURL + isp)
+func fetchData(client *http.Client, datacenter string) ([]byte, error) {
+	resp, err := client.Get(baseURL + datacenter)
 	if err != nil {
 		return nil, fmt.Errorf("request error: %v", err)
 	}
