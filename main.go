@@ -70,7 +70,7 @@ func chooseServiceInteractive() string {
 	fmt.Print("Enter number: ")
 	_, err := fmt.Scanln(&choice)
 	if err != nil || choice < 1 || choice > len(availableServices) {
-		fmt.Println("❌ Invalid choice. Defaulting to 'google'")
+		fmt.Println("⚠️ Invalid choice. Defaulting to 'google'")
 		return "google"
 	}
 	return availableServices[choice-1]
@@ -81,23 +81,27 @@ func fetchData(client *http.Client, isp string) (float64, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return 0, fmt.Errorf("❌ request creation error: %v", err)
+		return 0, fmt.Errorf("⚠️ request creation error: %v", err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, fmt.Errorf("❌ request error: %v", err)
+		return 0, fmt.Errorf("⚠️ request error: %v", err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("⚠️ unexpected status code: %d", resp.StatusCode)
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return 0, fmt.Errorf("❌ error reading response: %v", err)
+		return 0, fmt.Errorf("⚠️ error reading response: %v", err)
 	}
 
 	var data map[string][]float64
 	if err := json.Unmarshal(body, &data); err != nil {
-		return 0, fmt.Errorf("❌ JSON parse error: %v", err)
+		return 0, fmt.Errorf("⚠️ JSON parse error: %v", err)
 	}
 
 	values, ok := data[serviceIndicator]
@@ -116,7 +120,7 @@ func checkStatus(isp string, value float64) {
 		if errorCounts[isp] >= 3 && !erroredISPs[isp] {
 			err := beeep.Notify("🔴 Internet Outage", fmt.Sprintf("%s unreachable from %s", serviceIndicator, isp), "./icon.png")
 			if err != nil {
-				fmt.Printf("[%s] ❌ Notification error: %v\n", isp, err)
+				fmt.Printf("[%s] ⚠️ Notification error: %v\n", isp, err)
 			}
 			erroredISPs[isp] = true
 		}
@@ -124,7 +128,7 @@ func checkStatus(isp string, value float64) {
 		if erroredISPs[isp] {
 			err := beeep.Notify("🟢 Internet Restored", fmt.Sprintf("%s is reachable again from %s", serviceIndicator, isp), "./icon.png")
 			if err != nil {
-				fmt.Printf("[%s] ❌ Notification error: %v\n", isp, err)
+				fmt.Printf("[%s] ⚠️ Notification error: %v\n", isp, err)
 			}
 			fmt.Printf("[%s] 🟢 %s is reachable again\n", isp, serviceIndicator)
 		}
@@ -153,7 +157,7 @@ func main() {
 	if *serviceFlag > 0 && *serviceFlag <= len(availableServices) {
 		serviceIndicator = availableServices[*serviceFlag-1]
 	} else if *serviceFlag != 0 {
-		fmt.Println("❌ Invalid service number. Use --help to see available options.")
+		fmt.Println("⚠️ Invalid service number. Use --help to see available options.")
 		os.Exit(1)
 	} else {
 		serviceIndicator = chooseServiceInteractive()
