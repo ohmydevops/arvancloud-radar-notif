@@ -50,7 +50,7 @@ func main() {
 
 	fmt.Printf("✅ Monitoring service: %s\n\n", cfg.Service)
 
-	//waitUntilNextMinute()
+	// performDelay(cfg.CheckDelay)
 
 	for {
 		fmt.Printf("⏰ %s\n", time.Now().Format("15:04:05"))
@@ -66,18 +66,22 @@ func main() {
 		}
 
 		wg.Wait()
-		time.Sleep(10 * time.Second)
+
+		performDelay(cfg.CheckDelay)
 	}
 }
 
 // checkDatacenter handles checking & notification for a single datacenter
 func checkDatacenter(datacenter radar.Datacenter, service radar.Service, notifiersManager *notification.NotifiersManager) {
+
+	// Retrieve connectivity statistics between the datacenter and the service
 	stats, err := radar.CheckDatacenterServiceStatistics(datacenter, service)
 	if err != nil {
 		fmt.Printf("⚠️ Statistics: %v from [%s]\n", err, datacenter)
 		return
 	}
 
+	// Prevents race condition
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -117,9 +121,9 @@ func printServices() {
 
 }
 
-// waitUntilNextMinute sleeps until next full minute
-func waitUntilNextMinute() {
-	time.Sleep(time.Until(time.Now().Truncate(time.Minute).Add(time.Minute)))
+// performDelay sleeps until next full minute
+func performDelay(minutes int) {
+	time.Sleep(time.Duration(minutes) * time.Minute)
 }
 
 // capitalizeFirst makes the first letter uppercase
