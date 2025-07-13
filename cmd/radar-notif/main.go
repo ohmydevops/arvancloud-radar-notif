@@ -13,16 +13,16 @@ import (
 	"github.com/ohmydevops/arvancloud-radar-notif/radar"
 )
 
-// Max consecutive errors to consider outage
-const maxISPError = 3
-
-const notificationIconPath = "./icon.png"
 const ProgramName = "📡 Arvan Cloud Radar Monitor"
 
+// Max consecutive errors to consider outage
+const maxConsecutiveErrorsForOutage = 3
+const notificationIconPath = "./icon.png"
+
 var (
-	ISPErrorCounts = make(map[radar.Datacenter]int)
-	erroredISPs    = make(map[radar.Datacenter]bool)
-	mu             sync.Mutex // protects ISPErrorCounts & erroredISPs
+	DatacenterErrorCounts = make(map[radar.Datacenter]int)
+	erroredDatacenters    = make(map[radar.Datacenter]bool)
+	mu                    sync.Mutex // protects DatacenterErrorCounts & erroredDatacenters
 )
 
 func main() {
@@ -56,12 +56,12 @@ func main() {
 
 		var wg sync.WaitGroup
 
-		for _, isp := range radar.AllDatacenters {
+		for _, datacenter := range radar.AllDatacenters {
 			wg.Add(1)
-			go func(isp radar.Datacenter) {
+			go func(dc radar.Datacenter) {
 				defer wg.Done()
-				checkISP(isp, radar.Service(cfg.Service), notifiersManager)
-			}(isp)
+				checkDatacenter(dc, radar.Service(cfg.Service), notifiersManager)
+			}(datacenter)
 		}
 
 		wg.Wait()
@@ -69,8 +69,8 @@ func main() {
 	}
 }
 
-// checkISP handles checking & notification for a single ISP
-func checkISP(datacenter radar.Datacenter, service radar.Service, notifiersManager *notification.NotifiersManager) {
+// checkDatacenter handles checking & notification for a single datacenter
+func checkDatacenter(datacenter radar.Datacenter, service radar.Service, notifiersManager *notification.NotifiersManager) {
 	stats, err := radar.CheckDatacenterServiceStatistics(datacenter, service)
 	if err != nil {
 		fmt.Printf("[%s] ⚠️ %v\n", datacenter, err)
@@ -81,24 +81,24 @@ func checkISP(datacenter radar.Datacenter, service radar.Service, notifiersManag
 	defer mu.Unlock()
 
 	if stats.IsAccessibleNow() {
-		if erroredISPs[datacenter] {
+		if erroredDatacenters[datacenter] {
 			title := "🟢 Internet Restored"
 			msg := fmt.Sprintf("%s is reachable again from %s", service, datacenter)
 			if err := notifiersManager.Notify(title, msg); err != nil {
 				log.Printf("[%s] ❌ Notification error: %v", datacenter, err)
 			}
 		}
-		erroredISPs[datacenter] = false
-		ISPErrorCounts[datacenter] = 0
+		erroredDatacenters[datacenter] = false
+		DatacenterErrorCounts[datacenter] = 0
 	} else {
-		ISPErrorCounts[datacenter]++
-		if ISPErrorCounts[datacenter] > maxISPError && !erroredISPs[datacenter] {
+		DatacenterErrorCounts[datacenter]++
+		if DatacenterErrorCounts[datacenter] > maxConsecutiveErrorsForOutage && !erroredDatacenters[datacenter] {
 			title := "🔴 Internet Outage"
 			msg := fmt.Sprintf("%s unreachable from %s", service, datacenter)
 			if err := notifiersManager.Notify(title, msg); err != nil {
 				fmt.Printf("[%s] ❌ Notification error: %v", datacenter, err)
 			}
-			erroredISPs[datacenter] = true
+			erroredDatacenters[datacenter] = true
 		}
 	}
 }
