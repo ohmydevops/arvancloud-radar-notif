@@ -48,7 +48,7 @@ func main() {
 
 	fmt.Println(ProgramName)
 
-	fmt.Printf("✅ Monitoring service: %s\n\n", cfg.Service)
+	fmt.Printf("✅ Monitoring service: %s\n\n", capitalizeFirst(cfg.Service))
 
 	// performDelay(cfg.CheckDelay)
 
