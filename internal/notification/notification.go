@@ -46,16 +46,21 @@ func (c *ConsoleNotifier) Notify(title, message string) error {
 
 // DesktopNotifier sends desktop notifications using beeep.
 type DesktopNotifier struct {
-	IconPath string
+	IconPath          string
+	NotificationTitle string
 }
 
-func NewDesktopNotofier(iconPath string) *DesktopNotifier {
+func NewDesktopNotofier(NotificationTitle, iconPath string) *DesktopNotifier {
 	return &DesktopNotifier{
-		IconPath: iconPath,
+		IconPath:          iconPath,
+		NotificationTitle: NotificationTitle,
 	}
 }
 
 func (d *DesktopNotifier) Notify(title, message string) error {
+	if beeep.AppName != d.NotificationTitle {
+		beeep.AppName = d.NotificationTitle
+	}
 	if err := beeep.Notify(title, message, d.IconPath); err != nil {
 		return fmt.Errorf("desktop notification error: %v", err)
 	}

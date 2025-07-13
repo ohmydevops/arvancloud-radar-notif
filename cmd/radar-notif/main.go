@@ -17,6 +17,7 @@ import (
 const maxISPError = 3
 
 const notificationIconPath = "./icon.png"
+const ProgramName = "📡 Arvan Cloud Radar Monitor"
 
 var (
 	ISPErrorCounts = make(map[radar.Datacenter]int)
@@ -40,11 +41,11 @@ func main() {
 	// Create notification manager
 	notifiers := []notification.Notifier{
 		notification.NewConsoleNotifier(),
-		notification.NewDesktopNotofier(notificationIconPath),
+		notification.NewDesktopNotofier(ProgramName, notificationIconPath),
 	}
 	notifiersManager := notification.NewNotofiersManager(notifiers)
 
-	fmt.Println("📡 Arvan Cloud Radar Monitor")
+	fmt.Println(ProgramName)
 
 	fmt.Printf("✅ Monitoring service: %s\n", cfg.Service)
 
