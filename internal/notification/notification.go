@@ -40,7 +40,7 @@ func NewConsoleNotifier() *ConsoleNotifier {
 	return &ConsoleNotifier{}
 }
 func (c *ConsoleNotifier) Notify(title, message string) error {
-	_, err := fmt.Printf("[%s] %s", title, message)
+	_, err := fmt.Printf("[%s] %s\n", title, message)
 	return err
 }
 
