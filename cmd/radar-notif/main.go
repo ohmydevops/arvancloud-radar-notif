@@ -39,6 +39,7 @@ func main() {
 
 	// Create notification manager
 	notifiers := []notification.Notifier{
+		notification.NewConsoleNotifier(),
 		notification.NewDesktopNotofier(notificationIconPath),
 	}
 	notifiersManager := notification.NewNotofiersManager(notifiers)
@@ -47,7 +48,7 @@ func main() {
 
 	fmt.Printf("✅ Monitoring service: %s\n", cfg.Service)
 
-	waitUntilNextMinute()
+	//waitUntilNextMinute()
 
 	for {
 		fmt.Printf("⏰ %s\n", time.Now().Format("15:04:05"))
@@ -63,7 +64,7 @@ func main() {
 		}
 
 		wg.Wait()
-		time.Sleep(1 * time.Minute)
+		time.Sleep(10 * time.Second)
 	}
 }
 

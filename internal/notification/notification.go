@@ -32,6 +32,18 @@ func (m *NotifiersManager) Notify(title, message string) error {
 	return nil
 }
 
+// ConsoleNotifier prints logs on console.
+type ConsoleNotifier struct {
+}
+
+func NewConsoleNotifier() *ConsoleNotifier {
+	return &ConsoleNotifier{}
+}
+func (c *ConsoleNotifier) Notify(title, message string) error {
+	_, err := fmt.Printf("[%s] %s", title, message)
+	return err
+}
+
 // DesktopNotifier sends desktop notifications using beeep.
 type DesktopNotifier struct {
 	IconPath string
