@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -47,7 +48,7 @@ func main() {
 
 	fmt.Println(ProgramName)
 
-	fmt.Printf("✅ Monitoring service: %s\n", cfg.Service)
+	fmt.Printf("✅ Monitoring service: %s\n\n", cfg.Service)
 
 	//waitUntilNextMinute()
 
@@ -73,7 +74,7 @@ func main() {
 func checkDatacenter(datacenter radar.Datacenter, service radar.Service, notifiersManager *notification.NotifiersManager) {
 	stats, err := radar.CheckDatacenterServiceStatistics(datacenter, service)
 	if err != nil {
-		fmt.Printf("[%s] ⚠️ %v\n", datacenter, err)
+		fmt.Printf("⚠️ Statistics: %v from [%s]\n", err, datacenter)
 		return
 	}
 
@@ -83,20 +84,24 @@ func checkDatacenter(datacenter radar.Datacenter, service radar.Service, notifie
 	if stats.IsAccessibleNow() {
 		if erroredDatacenters[datacenter] {
 			title := "🟢 Internet Restored"
-			msg := fmt.Sprintf("%s is reachable again from %s", service, datacenter)
+			msg := fmt.Sprintf("%s is reachable again from %s", capitalizeFirst(string(service)), datacenter)
+
+			// Notify through notification mechanisms
 			if err := notifiersManager.Notify(title, msg); err != nil {
-				log.Printf("[%s] ❌ Notification error: %v", datacenter, err)
+				log.Printf("❌ Notification: %v from [%s]", err, datacenter)
 			}
 		}
 		erroredDatacenters[datacenter] = false
 		DatacenterErrorCounts[datacenter] = 0
 	} else {
 		DatacenterErrorCounts[datacenter]++
-		if DatacenterErrorCounts[datacenter] > maxConsecutiveErrorsForOutage && !erroredDatacenters[datacenter] {
+		if DatacenterErrorCounts[datacenter] >= maxConsecutiveErrorsForOutage && !erroredDatacenters[datacenter] {
 			title := "🔴 Internet Outage"
-			msg := fmt.Sprintf("%s unreachable from %s", service, datacenter)
+			msg := fmt.Sprintf("%s is unreachable from %s", capitalizeFirst(string(service)), datacenter)
+
+			// Notify through notification mechanisms
 			if err := notifiersManager.Notify(title, msg); err != nil {
-				fmt.Printf("[%s] ❌ Notification error: %v", datacenter, err)
+				fmt.Printf("❌ Notification: %v from [%s]", err, datacenter)
 			}
 			erroredDatacenters[datacenter] = true
 		}
@@ -115,4 +120,12 @@ func printServices() {
 // waitUntilNextMinute sleeps until next full minute
 func waitUntilNextMinute() {
 	time.Sleep(time.Until(time.Now().Truncate(time.Minute).Add(time.Minute)))
+}
+
+// capitalizeFirst makes the first letter uppercase
+func capitalizeFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }
