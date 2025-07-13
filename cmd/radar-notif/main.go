@@ -125,8 +125,8 @@ func printServices() {
 
 // performDelay sleeps until next full minute
 func performDelay(minutes int) {
-	//time.Sleep(time.Duration(minutes) * time.Minute)
-	time.Sleep(5 * time.Second)
+	time.Sleep(time.Duration(minutes) * time.Minute)
+	// time.Sleep(5 * time.Second)
 }
 
 // capitalizeFirst makes the first letter uppercase
