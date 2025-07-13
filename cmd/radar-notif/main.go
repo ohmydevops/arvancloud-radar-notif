@@ -42,7 +42,9 @@ func main() {
 	// Create notification manager
 	notifiers := []notification.Notifier{
 		notification.NewConsoleNotifier(),
-		notification.NewDesktopNotofier(ProgramName, notificationIconPath),
+	}
+	if cfg.DesktopNotification {
+		notifiers = append(notifiers, notification.NewDesktopNotofier(ProgramName, notificationIconPath))
 	}
 	notifiersManager := notification.NewNotofiersManager(notifiers)
 
@@ -123,7 +125,8 @@ func printServices() {
 
 // performDelay sleeps until next full minute
 func performDelay(minutes int) {
-	time.Sleep(time.Duration(minutes) * time.Minute)
+	//time.Sleep(time.Duration(minutes) * time.Minute)
+	time.Sleep(5 * time.Second)
 }
 
 // capitalizeFirst makes the first letter uppercase
