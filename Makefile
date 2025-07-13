@@ -1,5 +1,5 @@
 OUTPUT_DIR = build
-SOURCE = ./
+SOURCE = ./cmd/radar-notif/
 
 all: linux windows mac
 
