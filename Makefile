@@ -1,5 +1,5 @@
 OUTPUT_DIR = build
-SOURCE = main.go
+SOURCE = ./
 
 all: linux windows mac
 
