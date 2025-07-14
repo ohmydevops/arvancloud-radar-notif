@@ -29,6 +29,7 @@ const (
 	Datacenter_BertinaXrx  Datacenter = "bertina-xrx"
 	Datacenter_BertinaThr  Datacenter = "bertina-thr"
 	Datacenter_AjkAbrbaran Datacenter = "ajk-abrbaran"
+	Datacenter_Amin        Datacenter = "amin"
 
 	// Not found data DataCenters
 	// DataCenter_SindadThrFanava Datacenter = "sindad-thr-fanava"
