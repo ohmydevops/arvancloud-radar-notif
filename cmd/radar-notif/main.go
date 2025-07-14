@@ -123,7 +123,7 @@ func printServices() {
 
 }
 
-// performDelay sleeps until next full minute
+// performDelay sleeps for the specified number of minutes
 func performDelay(minutes int) {
 	time.Sleep(time.Duration(minutes) * time.Minute)
 	// time.Sleep(5 * time.Second)
