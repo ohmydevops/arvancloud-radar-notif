@@ -4,6 +4,12 @@ A desktop notification system that monitors internet connectivity across various
 
 ![windows notif](./screenshots/screen3.jpg)
 
+## ⚠️ Known Issue
+
+**Status: Currently Not Working**
+
+The ArvanCloud Radar API is now protected by ArvanCDN's bot shield (Arcshield), which requires JavaScript execution to generate valid cookies. We need to work on this later. If you can solve it sooner, please make a PR!
+
 
 ## Features
 
